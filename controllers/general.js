@@ -1,73 +1,65 @@
+'use strict';
 module.exports = function () {
 
-function criba(number) {
-var primo = new Array();
-var primosClean = new Array();
-
-//criba
+function findPrimes(number) {
+var primes = [];
+var primesCirc = [0,1,2];
 var sqrtNumber = Math.ceil(Math.sqrt(number));
-console.log(Math.sqrt(number));
-console.log(sqrtNumber);
-for (var i = 0; i < number; i++) {
-	primo.push(i);
-}
 
-console.log('1 ----> '+primo);
+//populate array prime
+for (var i = 0; i < number; i++) {
+	primes.push(i);
+}
+//criba de eratostenes
 for(i = 2; i < sqrtNumber; i++){
 	for(var j=i ;(j*i) < number; j++){
-		console.log('saca'+(i*j));
-		delete primo[i*j];
+		delete primes[i*j];
+	}
+}
+//circular
+for(i = 3; i < primes.length; i++) {
+	if(!isNaN(primes[i])){
+		if(isCircularPrime(primes[i])){
+			primesCirc.push(primes[i]);
+		}
 	}
 }
 
-for (var i = 0; i < primo.length; i++) {
-	if(!isNaN(primo[i])){
-	primosClean.push(primo[i]);
+return primesCirc;
+}
+
+function isCircularPrime (number) {
+var lengthTopNumber = digits(number);
+var magnification = Math.pow(10, lengthTopNumber - 1 );
+
+	for(var i=0; i < lengthTopNumber; i++){
+			if(!isPrime(number)){
+				return false;
+			}
+			number = rotatePrime(number,magnification);
 	}
-};
+	return true;
 
-console.log('2---> '+primosClean);
-return primosClean;
 }
 
-function circularNumbers (list) {
-var circ = new Array();
-	for(var num in list){
-		checkCircular(num,list);
+function isPrime (val) {
+var sqrtNumber = Math.ceil(Math.sqrt(val));
+	
+	for(var i = 2; i <= sqrtNumber; i++){
+		if(val%i === 0){
+			return false;
+		}
 	}
-console.log(circ);
+	return true;
 }
 
-function checkCircular(number,list) {
-	var output = [],
-    sNumber = number.toString();
-
-for (var i = 0, len = sNumber.length; i < len; i += 1) {
-    output.push(+sNumber.charAt(i));
-}
-//generateEveryPosition && toNumbers
-/*
-func everyPos(output){
-	async.parallel([
-	//at least 1 thread per digit (e.x.: 2 digit -> 1 thread, 3 -> 1 thread, 4 -> 2 thread )
-		isPrime(shuffle(output),ifErr(stopAll!));
-		
-	]);
-	function ifErr(output){
-	//podar!
-	delete list[ every number group];
-	}
+function digits (num) {
+	return num.toString().length;
 }
 
-)
-	return group;
+function rotatePrime(number,magnification) {
+	return Math.floor((number % 10 ) * magnification + (number/10));
 }
-*/
-
-
-}
-
-};
 
 var gen = {
 	
@@ -76,36 +68,41 @@ var gen = {
 		next();
 	},
 	validate: function (req,res,next) {
-	var util = require('util');
+		var util = require('util');
+		var number = req.param('number') ? req.param('number') : req.body.numberPost;
 
-	if(req.body)
-		console.log(req.body.numberPost);
+		if(req.body.numberPost !== undefined){
+		req.assert('numberPost','Invalid number must be int').isInt();
+		req.assert('numberPost','Must enter a number').notEmpty();
+		req.assert('numberPost','1 to 7 digits allowed').len(1,7);
+		}
 
-	if(req.params)
-		console.log(req.params);
-	
-	var number = req.param('number') ? req.param('number') : req.body.numberPost;
-	//validation
-	req.assert('number','Invalid number must be int').isInt();
-	req.assert('number','Must enter a number').notEmpty();
-	req.assert('number','1 to 7 digits allowed').len(1,7);
+		if(req.param('number') !== undefined){
+		req.assert('number','Invalid number must be int').isInt();
+		req.assert('number','Must enter a number').notEmpty();
+		req.assert('number','1 to 7 digits allowed').len(1,7);	
+		}
+		
+		//validation
+		
 
-	var errors = req.validationErrors();
-	
-	if(errors){
-				res.render('index',{msg: 'There have been validation errors: '+util.inspect(errors)});
-				return;
-	}
-	var list = criba(Number(number));
-	var circularList = circularNumbers(list);
+		var errors = req.validationErrors();
+		
+		if(errors){
+					res.send({msg: 'There have been validation errors: '+util.inspect(errors)});
+		}else{
 
-	res.render('index',{msg:'number ok', number:number,list:list});
-	next();
+		var list = findPrimes(Number(number));
+		res.send({msg:'number ok', list:util.inspect(list)});
+
+		next();
+		}
 	},
+
 	logout: function (req,res,next) {
 		res.render('index',{msg:'thanks!!'});
 		next();
 	}
-}	
+};	
 return gen;
-}
+};
