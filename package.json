@@ -1,0 +1,18 @@
+{
+  "name": "ml",
+  "version": "0.0.1",
+  "description": "ml-test",
+  "main": "server.js",
+  "dependencies":{
+    "express":"*",
+    "express-validator":"*",
+    "body-parser":"*",
+    "jade":"*"
+  },
+  "scripts": {
+    "test": "npm test",
+    "start": "node server.js"
+  },
+  "author": "lgargantini",
+  "license": "ISC"
+}

@@ -1,0 +1,16 @@
+html
+	head
+		title ml-test
+	body
+		if	msg
+			p msg
+		
+		h1 Enter your number
+
+		form(method="POST", action='/validate')
+			label(for='number') Number:
+			input(type='text', id='numberPost', name='numberPost', placeholder='number')
+			input(type='submit')
+
+		if	list
+			p list
