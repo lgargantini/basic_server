@@ -4,10 +4,15 @@
   "description": "ml-test",
   "main": "server.js",
   "dependencies":{
-    "express":"*",
+    "express":"^4.0.0",
+    "express-session":"^1.0.2",
+    "cookie-parser":"^1.0.1",
     "express-validator":"*",
     "body-parser":"*",
-    "jade":"*"
+    "jade":"*",
+    "cluster":"*",
+    "errorhandler":"*",
+    "connect-flash": "^0.1.1"
   },
   "scripts": {
     "test": "npm test",

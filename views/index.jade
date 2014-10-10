@@ -1,11 +1,19 @@
 html
 	head
 		title ml-test
+		link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css')
 	body
 			
-		h1 Enter your number
-
-		form(method="POST", action='/validate')
-			label(for='number') Number:
-			input(type='text', id='numberPost', name='numberPost', placeholder='number')
-			input(type='submit')
+		h1 Please enter your number:
+		include messages
+		form(id='login-form' method="POST", action='/validate')
+			.form-group
+				label(for='number') Number: 
+				input(type='text', id='numberPost', class='form-control', name='numberPost', placeholder='number')
+			.form-group
+				input(type='submit', class='btn btn-default')
+		Results: if results
+			ul(class='list-style')#results
+				each result in results
+					li(class='success') #{result}
+			

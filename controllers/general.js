@@ -1,67 +1,52 @@
 'use strict';
 module.exports = function () {
+var results = {};
+//SHOW ALERTS 
+	var showAlert = function (res, render, type, msg) {
+		res.render(render,{flash:{ type: type, messages: [{msg: msg}]}});
+	};
 
-	function findPrimes(number) {
-		var primes = [0,1,2];
-		var primesCirc = [0,1,2];
-		var sqrtNumber = Math.ceil(Math.sqrt(number));
+	//SHOW RESULTS 
+	var showResult = function (res, render,results) {
+		res.render(render,{results: results});
+	};
 
-			//populate array prime
-			for (var i = 3; i < number; i++) {
-				if(isPrime(i)){
-					primes.push(i);
-				}
-			}
-			//circular
-			for(i = 3; i < primes.length; i++) {
-				if(isCircularPrime(primes[i])){
-					primesCirc.push(primes[i]);
-				}
-			}
-			return primesCirc;
-	}
-
-	function isCircularPrime (number) {
-		var lengthTopNumber = digits(number);
-		var magnification = Math.pow(10, lengthTopNumber - 1 );
-	//criba de eratostenes
-	for(var i=0; i < lengthTopNumber; i++){
-		if(!isPrime(number)){
-			return false;
-		}
-		number = rotatePrime(number,magnification);
-	}
-	return true;
-
-	}
-
-	function isPrime (val) {
-		var sqrtNumber = Math.ceil(Math.sqrt(val));
+	function primesValidate (number,res) {
 		
-		for(var i = 2; i <= sqrtNumber; i++){
-			if(val%i === 0){
-				return false;
-			}
-		}
-		return true;
+		var cp = require('child_process');
+		var n = cp.fork(__dirname+'/prime.js');
+		//FIND PRIMES
+		findPrimes(number,n);
+		//child handler
+		childHandler(n,res);
+		return results;
 	}
 
-	function digits (num) {
-		return num.toString().length;
+	function childHandler (n,res) {
+		n.on('message', function (m) {
+			results = m.resultList;
+		})
+		.on('err', function (data) {
+				console.log('stderr: ' + data);
+		})
+		.on('exit', function (code) {
+				console.log('child process exited with code :' + code);
+				showResult(res, 'index', results);
+		});
 	}
 
-	function rotatePrime(number,magnification) {
-		return Math.floor((number % 10 ) * magnification + (number/10));
+	function findPrimes (number,n) {
+		console.log('forked child pid:'+ n.pid);
+		n.send({num: number});
 	}
 
 var gen = {
 	
 	index: function (req,res,next) {
-		res.render('index',{msg: 'wellcome!'});
+		showAlert(res, 'index', 'alert-info','wellcome! ');
 		next();
 	},
-	validate: function (req,res,next) {
-		var util = require('util');
+	validate: function (req,res) {
 		var number = req.param('number') ? req.param('number') : req.body.numberPost;
 
 		if(req.body.numberPost !== undefined){
@@ -77,23 +62,20 @@ var gen = {
 		}
 		
 		//validation
-		
-
 		var errors = req.validationErrors();
 		
 		if(errors){
-			res.json({msg: 'There have been validation errors: '+util.inspect(errors)});
+			for(var i=0;i<errors.length;i++){
+				showAlert(res,'index','alert-danger',errors[i].msg +' your input was '+errors[i].value+' and is wrong!');	
+			}
 		}else{
-
-			var list = findPrimes(Number(number));
-			res.json({msg:'number ok', list:util.inspect(list)});
-
-			next();
+			primesValidate(Number(number),res);
 		}
+
 	},
 
 	logout: function (req,res,next) {
-		res.render('index',{msg:'thanks!!'});
+		showAlert(res, 'index', 'alert-info', 'thanks!!!');
 		next();
 	}
 };	
